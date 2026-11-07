@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0b0b0d">
+<title>GymTrack</title>
+<style>
+:root{--bg:#101013;--card:#19191E;--card2:#24242A;--line:#26262D;--text:#F5F5F7;--mute:#85858F;--acc:#FF801A;--ok:#2ecc71;--warn:#f1c40f;--bad:#e74c3c}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,system-ui,"Segoe UI",Roboto,sans-serif}
+body{padding-bottom:40px}
+.hidden{display:none!important}
+header{position:sticky;top:0;z-index:5;background:var(--bg);padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+.top{display:flex;justify-content:space-between;align-items:center}
+h1{font-size:20px;margin:0}
+.wl{color:var(--mute);font-size:15px;margin-top:4px}
+.days{display:flex;gap:8px;margin-top:10px}
+.day{flex:1;padding:13px 0;border-radius:12px;background:var(--card);border:1px solid var(--line);color:var(--text);font-size:15px;font-weight:600}
+.day.on{background:var(--acc);border-color:var(--acc);color:#000}
+.day.off{opacity:.45}
+main{padding:12px 16px}
+.chip{background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 12px;font-size:14px;font-weight:600}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#000}
+.banner{background:#1d1d24;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px;color:var(--mute);display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.banner.ok{color:var(--ok)}
+.banner.warnb{background:var(--warn);color:#000;border-color:var(--warn);font-weight:600;justify-content:center;text-align:center}
+.toast{background:var(--ok);color:#000;border-radius:12px;padding:12px;font-weight:600;margin:10px 0}
+.paused{text-align:center;color:var(--mute);padding:40px 16px;font-size:17px;line-height:1.5}
+.dayhead{margin:6px 0 10px;font-size:17px}
+.ex{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.ex.dim{opacity:.5}
+.exh{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.exn{font-size:17px;font-weight:700}
+.exe{font-size:13px;color:var(--mute);margin-top:2px}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{font-size:12px;color:var(--mute);border:1px solid var(--line);border-radius:8px;padding:2px 7px}
+.tag.warn{color:var(--warn);border-color:var(--warn)}
+.hint{font-size:14px;color:var(--mute);margin:10px 0 2px;line-height:1.5}
+.set{display:grid;grid-template-columns:40px 1fr 1fr;gap:10px;align-items:center;padding:12px 0 4px;border-top:1px solid var(--line)}
+.set.warm{opacity:.7}
+.set.warm .lbl{color:var(--mute)}
+.lbl{font-size:16px;font-weight:800;color:var(--acc);text-align:center}
+.set input{font-size:24px;font-weight:700;padding:14px 4px}
+.fld{position:relative}
+.fld .unit{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;color:var(--mute);opacity:.8;pointer-events:none}
+.set .fld input{padding-right:34px}
+.colh{display:grid;grid-template-columns:40px 1fr 1fr;gap:10px;font-size:12px;color:var(--mute);text-align:center;text-transform:uppercase;letter-spacing:.06em;margin-top:8px}
+input{width:100%;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:12px 6px;font-size:18px;text-align:center;font-variant-numeric:tabular-nums;min-width:0}
+input:focus{outline:none;border-color:var(--acc)}
+.set2{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.rpew{flex:1;min-width:150px}
+.rcap{display:block;font-size:11px;color:var(--mute);opacity:.6;margin:0 0 3px 2px}
+.rpe{display:flex;gap:4px}
+.rpe button{flex:1;padding:10px 0;border-radius:9px;background:var(--card2);border:1px solid var(--line);color:var(--mute);font-size:15px;font-weight:600}
+.rpe button.on{background:var(--acc);border-color:var(--acc);color:#000}
+.toggle{padding:10px 14px;border-radius:10px;background:var(--card2);border:1px solid var(--line);color:var(--mute);font-size:14px;font-weight:600}
+.toggle.bad{background:var(--bad);border-color:var(--bad);color:#fff}
+.badge{font-size:12px;background:#2a2a31;color:var(--warn);border-radius:8px;padding:4px 8px}
+.cm{margin-top:6px;font-size:15px;padding:10px;text-align:left}
+.btn{display:block;width:100%;padding:16px;border-radius:12px;border:none;font-size:17px;font-weight:700;background:var(--acc);color:#000;margin:10px 0 0}
+.btn.ghost{background:var(--card);color:var(--text);border:1px solid var(--line)}
+.btn:disabled{opacity:.4}
+.bottom{position:sticky;bottom:0;background:var(--bg);padding:10px 0 4px}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:flex-end;z-index:20}
+.sheet{width:100%;max-height:88vh;overflow:auto;background:var(--card);border-radius:18px 18px 0 0;padding:18px 16px 28px}
+.sheet.full{max-height:100vh;height:100vh;border-radius:0}
+.sheet h2{margin:0 0 6px;font-size:19px}
+.sheet h3{margin:14px 0 6px;font-size:13px;color:var(--mute);text-transform:uppercase;letter-spacing:.04em}
+.sub{color:var(--mute);font-size:14px;margin:0 0 12px;line-height:1.45}
+.pick{display:flex;flex-direction:column;align-items:flex-start;width:100%;text-align:left;background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;margin-bottom:8px;font-size:16px;font-weight:700}
+.pick span{font-size:13px;color:var(--mute);margin-top:2px;font-weight:400}
+.cr{padding:12px 0;border-top:1px solid var(--line)}
+.crn{font-weight:700;font-size:16px;margin-bottom:8px}
+.crb{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.st{padding:13px 4px;border-radius:10px;background:var(--card2);border:1px solid var(--line);color:var(--mute);font-size:14px;font-weight:600}
+.st.on.ok{background:var(--ok);border-color:var(--ok);color:#000}
+.st.on.warn{background:var(--warn);border-color:var(--warn);color:#000}
+.st.on.mute{background:#3a3a44;border-color:#3a3a44;color:var(--text)}
+.sr{padding:12px 0;border-top:1px solid var(--line)}
+.srn{font-weight:700}
+.srv{font-size:14px;color:var(--mute);margin-top:2px}
+.srd{font-size:15px;margin-top:4px}
+.srm{font-size:13px;color:var(--mute);margin-top:3px}
+.sr .chip{margin-top:8px}
+.bl{padding:12px 0;border-top:1px solid var(--line)}
+.blh{font-size:15px;margin-bottom:8px}
+.wks{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.wk{padding:12px 0;border-radius:10px;background:var(--card2);border:1px solid var(--line);color:var(--text);font-weight:700}
+.wk.done{color:var(--ok);border-color:var(--ok)}
+.wk.cur{background:var(--acc);border-color:var(--acc);color:#000}
+.wk.gap{color:var(--mute);border-style:dashed}
+.wk:disabled{opacity:.3}
+.legend{color:var(--mute);font-size:13px;margin:12px 0}
+.startbox{padding-top:12px}
+.startbox p{line-height:1.5}
+.lab{display:block;margin:14px 0;color:var(--mute);font-size:14px}
+.lab input{margin-top:6px;text-align:left}
+.pick.on{border-color:var(--acc);color:var(--acc)}
+.thead,.srow{display:grid;grid-template-columns:40px 1fr 1fr 56px;gap:8px;align-items:center}
+.thead{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.05em;text-align:center;margin:10px 0 2px}
+.thead span:first-child{text-align:left}
+.srow{padding:6px 0;border-top:1px solid var(--line)}
+.srow.warm{opacity:.55}
+.sno{font-size:15px;font-weight:700;padding-left:2px}
+.srow input{font-size:20px;font-weight:600;padding:10px 4px;width:100%;background:var(--card2);border:1px solid transparent;border-radius:10px;text-align:center;font-variant-numeric:tabular-nums}
+.srow input:focus{border-color:var(--mute)}
+.srow .fld.man input{box-shadow:inset 3px 0 0 var(--mute)}
+.rpeb{background:none;border:none;color:var(--text);font-size:18px;font-weight:600;padding:8px 0;text-align:right;font-variant-numeric:tabular-nums}
+.rpeb i{font-style:normal;color:var(--mute);font-size:12px;margin-left:3px}
+.burger{width:42px;height:42px;border-radius:12px;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;padding:0;flex:none}
+.burger i{display:block;width:18px;height:2px;border-radius:2px;background:var(--text)}
+.drawer{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:30;display:flex}
+.drawer.hidden{display:none!important}
+.dpanel{width:82%;max-width:320px;height:100%;background:var(--bg);border-right:1px solid var(--line);padding:calc(env(safe-area-inset-top) + 22px) 16px 24px;display:flex;flex-direction:column;animation:slidein .18s ease-out}
+@keyframes slidein{from{transform:translateX(-12px);opacity:.4}to{transform:none;opacity:1}}
+.dlogo{font-size:24px;font-weight:800;padding:0 12px 22px}
+.dlogo span{color:var(--acc)}
+.dpanel nav{display:flex;flex-direction:column;gap:4px}
+.mi{display:flex;align-items:center;gap:14px;width:100%;padding:14px 12px;border-radius:12px;background:none;border:none;color:var(--text);font-size:17px;font-weight:600;text-align:left;position:relative}
+.mi svg{color:var(--mute);flex:none}
+.mi.on{color:var(--acc);background:rgba(255,128,26,.12)}
+.mi.on svg{color:var(--acc)}
+.mi.on::before{content:"";position:absolute;left:-16px;top:10px;bottom:10px;width:3px;border-radius:2px;background:var(--acc)}
+.dfoot{margin-top:auto;padding:14px 12px 0;border-top:1px solid var(--line);color:var(--mute);font-size:14px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="ov" class="ov hidden"></div>
+<div id="menu" class="drawer hidden"></div>
+
+<script>
+const KEY = "gymtrack_v2";
+
+/* Крок ваги за обладнанням. Примітка: у вимогах для тренажера є два значення (5 кг у переліку обладнання, 2,5 кг у правилі прогресії). Зараз 5 кг. Змінити можна тут. */
+const STEP = { machine:5, cable:5, barbell:2.5, ez:2.5, dumbbell:2 };
+const EQ = { machine:"тренажер", cable:"блок", barbell:"штанга", ez:"EZ-гриф", dumbbell:"гантелі" };
+const GROUPS = { chest:"Груди", back:"Спина", shoulders:"Плечі", biceps:"Біцепс", triceps:"Трицепс", legs:"Ноги" };
+
+const LIB = {
+  bench:        { n:"Жим лежачи", en:"Bench Press", g:"chest", eq:"barbell", w:2, k:3, frontDelt:true },
+  row_bench:    { n:"Тяга в нахилі з опорою на лаву", en:"Chest-Supported Row", g:"back", eq:"dumbbell", w:1, k:3 },
+  reverse_fly:  { n:"Зворотний метелик", en:"Reverse Pec Deck", g:"shoulders", eq:"machine", w:1, k:3 },
+  ez_curl:      { n:"EZ-гриф підйом стоячи", en:"EZ-Bar Curl", g:"biceps", eq:"ez", w:0, k:3 },
+  rope_tri:     { n:"Канат трицепс", en:"Rope Pushdown", g:"triceps", eq:"cable", w:0, k:3 },
+  hrow:         { n:"Горизонтальна тяга V-рукояткою", en:"Seated Cable Row", g:"back", eq:"cable", w:1, k:3 },
+  cable_fly:    { n:"Зведення в кросовері", en:"Cable Crossover", g:"chest", eq:"cable", w:1, k:3 },
+  db_lat:       { n:"Розведення гантелей", en:"Lateral Raise", g:"shoulders", eq:"dumbbell", w:1, k:3 },
+  cable_curl:   { n:"Біцепс у кросовері (пряма палиця)", en:"Cable Curl", g:"biceps", eq:"cable", w:0, k:3 },
+  oh_tri:       { n:"Розгинання трицепса з канатом над головою", en:"Overhead Rope Extension", g:"triceps", eq:"cable", w:0, k:3 },
+  lat_pd:       { n:"Тяга верхнього блока", en:"Lat Pulldown", g:"back", eq:"machine", w:1, k:3 },
+  db_row:       { n:"Тяга гантелі в нахилі", en:"One-Arm DB Row", g:"back", eq:"dumbbell", w:1, k:3, lowBack:true },
+  rdl:          { n:"Румунська тяга", en:"Romanian Deadlift", g:"legs", eq:"barbell", w:1, k:3, lowBack:true },
+  chest_press:  { n:"Жим у тренажері", en:"Chest Press Machine", g:"chest", eq:"machine", w:1, k:3, frontDelt:true },
+  db_bench:     { n:"Жим гантелей лежачи", en:"DB Bench Press", g:"chest", eq:"dumbbell", w:1, k:3, frontDelt:true },
+  hammer:       { n:"Молот з гантелями", en:"Hammer Curl", g:"biceps", eq:"dumbbell", w:0, k:3 },
+  skull:        { n:"Французький жим EZ-грифом", en:"EZ-Bar Skullcrusher", g:"triceps", eq:"ez", w:0, k:3 }
+};
+
+const PLAN = {
+  "Пн": { name:"Верх (груди + спина)", ids:["bench","row_bench","reverse_fly","ez_curl","rope_tri"] },
+  "Ср": { name:"Ноги", paused:true, ids:[] },
+  "Пт": { name:"Верх (спина + плечі)", ids:["hrow","cable_fly","db_lat","cable_curl","oh_tri"] }
+};
+const DAYS = Object.keys(PLAN);
+const DLABEL = { "Пн":"Понеділок", "Ср":"Середа", "Пт":"П'ятниця" };
+
+const BLK = {
+  1: { name:"Акумуляція", weeks:[1,2,3], lo:15, hi:20, prog:false },
+  2: { name:"Гіпертрофія", weeks:[4,5,6,7,8,9], lo:8, hi:12, prog:true },
+  3: { name:"Інтенсифікація", weeks:[10,11], lo:6, hi:8, prog:true },
+  4: { name:"Розвантаження", weeks:[12], lo:10, hi:12, prog:false, deload:true }
+};
+
+const MSG = {
+  up:"Вага зростає, ціль з нижньої межі діапазону",
+  hold:"Тримай вагу, намагайся +1 повтор",
+  pain:"Біль: вага лишається, підвищення тільки вручну",
+  up_manual:"Ручне підвищення підтверджено",
+  deload:"Розвантаження: 50% від робочої ваги, перевір вручну"
+};
+const STAT = { done:"Все зроблено", short:"Не вистачило", skip:"Пропустив вправу", dayskip:"День пропущено" };
+
+/* ---------- стан ---------- */
+let S = defaultState();
+let READY = false, DB_MODE = "local", DB_ERR = false, dbQueue = Promise.resolve(), dbDirty = false;
+const UNDO_KEY = KEY + "_undo";
+const ui = { day:"Пн", view:null, toast:"", close:null, screen:"home", undo: (()=>{ try { return localStorage.getItem(UNDO_KEY); } catch(e){ return null; } })() };
+function setUndo(v){
+  ui.undo = v;
+  try { if(v) localStorage.setItem(UNDO_KEY, v); else localStorage.removeItem(UNDO_KEY); } catch(e){}
+}
+const $app = document.getElementById("app");
+const $ov = document.getElementById("ov");
+
+function defaultState(){ return { started:false, cur:4, finished:false, entries:[], skips:{}, swaps:{}, closed:{}, targets:{} }; }
+/* Зберігання: Supabase (вхід по email і паролю), локальна копія в браузері як запасна */
+const SB_URL = "https://wqsypxrssnqcyaofeslg.supabase.co";
+const SB_KEY = "sb_publishable_QAMbx6uLC0mkOOZ_eshgAw_LjZ5gkrI";
+const SESS_KEY = KEY + "_session";
+let SESS = (()=>{ try { return JSON.parse(localStorage.getItem(SESS_KEY)) || null; } catch(e){ return null; } })();
+function setSess(s){ SESS = s; try { if(s) localStorage.setItem(SESS_KEY, JSON.stringify(s)); else localStorage.removeItem(SESS_KEY); } catch(e){} }
+function localMirror(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} }
+function setDirty(v){ try { if(v) localStorage.setItem(KEY+"_dirty","1"); else localStorage.removeItem(KEY+"_dirty"); } catch(e){} }
+function save(){ localMirror(); setDirty(true); queueDbWrite(); }
+let dbTimer = null;
+function queueDbWrite(){ if(!SESS) return; clearTimeout(dbTimer); dbTimer = setTimeout(flushDb, 400); }
+function flushDb(){
+  clearTimeout(dbTimer);
+  if(!SESS || dbDirty) return;
+  dbDirty = true;
+  dbQueue = dbQueue.then(async () => {
+    dbDirty = false;
+    const was = DB_ERR;
+    try {
+      await sbWriteState();
+      DB_ERR = false; setDirty(false);
+    } catch(e){ DB_ERR = true; console.warn(e); }
+    if(was !== DB_ERR && READY) renderApp();
+  });
+}
+function withTimeout(p, ms){ return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), ms))]); }
+
+/* Supabase: авторизація і таблиця gymtrack_state (один рядок на користувача, захищено RLS) */
+async function sbAuth(path, body){
+  const r = await fetch(SB_URL + "/auth/v1/" + path, { method:"POST", headers:{ "apikey":SB_KEY, "Content-Type":"application/json" }, body: JSON.stringify(body) });
+  const j = await r.json().catch(()=>({}));
+  if(!r.ok) throw new Error(j.error_description || j.msg || j.error || ("HTTP " + r.status));
+  return j;
+}
+function toSess(j){ return { access_token:j.access_token, refresh_token:j.refresh_token, expires_at: Date.now()/1000 + (j.expires_in||3600), user_id:j.user.id, email:j.user.email }; }
+async function sbSignIn(email, pass){ setSess(toSess(await sbAuth("token?grant_type=password", { email, password:pass }))); }
+async function sbSignUp(email, pass){
+  const j = await sbAuth("signup", { email, password:pass });
+  if(!j.access_token) throw new Error("акаунт створено, але потрібне підтвердження пошти; увійди після підтвердження");
+  setSess(toSess(j));
+}
+async function sbToken(){
+  if(!SESS) throw new Error("немає входу");
+  if(SESS.expires_at - 60 > Date.now()/1000) return SESS.access_token;
+  setSess(toSess(await sbAuth("token?grant_type=refresh_token", { refresh_token:SESS.refresh_token })));
+  return SESS.access_token;
+}
+async function sbRest(method, qs, body){
+  const tok = await sbToken();
+  const h = { "apikey":SB_KEY, "Authorization":"Bearer " + tok, "Content-Type":"application/json" };
+  if(method==="POST") h.Prefer = "resolution=merge-duplicates,return=minimal";
+  const r = await fetch(SB_URL + "/rest/v1/gymtrack_state" + (qs||""), { method, headers:h, body: body ? JSON.stringify(body) : undefined });
+  if(!r.ok) throw new Error("HTTP " + r.status);
+  return method==="GET" ? r.json() : null;
+}
+async function sbReadState(){
+  const rows = await sbRest("GET", "?select=state&user_id=eq." + SESS.user_id);
+  return rows && rows[0] ? rows[0].state : null;
+}
+async function sbWriteState(){
+  await sbRest("POST", "?on_conflict=user_id", { user_id:SESS.user_id, state:JSON.parse(JSON.stringify(S)), updated_at:new Date().toISOString() });
+}
+
+async function boot(){
+  let local = null, dirty = false;
+  try { const d = JSON.parse(localStorage.getItem(KEY)); if(d) local = d; } catch(e){}
+  try { dirty = localStorage.getItem(KEY+"_dirty") === "1"; } catch(e){}
+  if(!SESS){ READY = true; renderApp(); return; }
+  let remote = null;
+  try {
+    remote = await withTimeout(sbReadState(), 10000);
+    DB_MODE = "cloud"; DB_ERR = false;
+  } catch(e){ console.warn(e); DB_MODE = "local"; DB_ERR = true; }
+  if(local && dirty){ S = local; localMirror(); queueDbWrite(); }
+  else if(remote){ S = remote; localMirror(); }
+  else if(local){ S = local; localMirror(); queueDbWrite(); }
+  else { S = defaultState(); }
+  READY = true;
+  renderApp();
+}
+async function doAuth(mode){
+  const email = (document.getElementById("lEmail")||{}).value||"";
+  const pass = (document.getElementById("lPass")||{}).value||"";
+  ui.lEmail = email.trim();
+  if(!ui.lEmail || pass.length < 6){ ui.toast = "Введи email і пароль (мінімум 6 символів)."; renderApp(); return; }
+  ui.toast = "Заходимо..."; renderApp();
+  try {
+    if(mode==="signup") await sbSignUp(ui.lEmail, pass); else await sbSignIn(ui.lEmail, pass);
+    ui.toast = ""; await boot();
+  } catch(e){ ui.toast = "Не вдалося: " + e.message; renderApp(); }
+}
+function loginHtml(){
+  return `<header><div class="top"><h1>GymTrack</h1></div></header><main>
+  <div class="ex" style="margin-top:12px">
+    <p style="margin:0 0 10px;color:var(--mute)">Увійди, щоб дані були збережені і доступні з будь-якого пристрою.</p>
+    <input id="lEmail" type="email" placeholder="Email" autocomplete="username" value="${ui.lEmail||""}" style="font-size:16px">
+    <input id="lPass" type="password" placeholder="Пароль (мінімум 6 символів)" autocomplete="current-password" style="margin-top:8px;font-size:16px">
+    <button class="btn" data-act="login">Увійти</button>
+    <button class="btn ghost" data-act="signup">Створити акаунт</button>
+    <div style="margin-top:10px;color:var(--mute)">${ui.toast||""}</div>
+  </div></main>`;
+}
+
+/* ---------- допоміжні ---------- */
+const num = v => { if(v===null||v===undefined||v==="") return null; const n = parseFloat(String(v).replace(",",".")); return isNaN(n) ? null : n; };
+const fmt = n => String(n).replace(".", ",");
+const clamp = (v,lo,hi) => Math.min(hi, Math.max(lo, v));
+const roundTo = (v,st) => Number((Math.round(v/st)*st).toFixed(2));
+const roundDown = (v,st) => Number((Math.floor(v/st)*st).toFixed(2));
+const stepOf = ex => STEP[LIB[ex].eq];
+const blk = wk => { for(const k of Object.keys(BLK)) if(BLK[k].weeks.includes(wk)) return +k; return 1; };
+const blkObj = wk => BLK[blk(wk)];
+const dayOff = (wk,day) => !!S.skips[wk+"|"+day];
+const activeIds = (wk,day) => S.swaps[wk+"|"+day] || PLAN[day].ids;
+const viewWk = () => ui.view ?? S.cur;
+const esc = s => String(s??"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const parseK = k => { const [wk,day,ex,type,no] = k.split("|"); return { wk:+wk, day, ex, type, no:+no }; };
+const findE = (wk,day,ex,type,no) => S.entries.find(e => e.wk===wk && e.day===day && e.ex===ex && e.type===type && e.no===no);
+const entryFor = k => { const p = parseK(k); return findE(p.wk,p.day,p.ex,p.type,p.no); };
+const workEntries = (wk,ex) => S.entries.filter(e => e.wk===wk && e.ex===ex && e.type==="work");
+function setE(k, patch){
+  setUndo(null);
+  const p = parseK(k);
+  let e = findE(p.wk,p.day,p.ex,p.type,p.no);
+  if(!e){
+    e = { ...p, weight:null, reps:null, rpe:null, pain:false, painNote:"", note:"", manual:false, reason:"" };
+    S.entries.push(e);
+  }
+  Object.assign(e, patch);
+  save();
+  return e;
+}
+function setsOf(w,ex){ return blkObj(w).deload ? { warm:0, work:2 } : { warm:LIB[ex].w, work:LIB[ex].k }; }
+function checkIds(w){
+  const out = [];
+  for(const d of DAYS){
+    if(PLAN[d].paused || dayOff(w,d)) continue;
+    for(const id of activeIds(w,d)) if(!out.includes(id)) out.push(id);
+  }
+  return out;
+}
+function lastWork(w,ex){
+  for(let x=w-1; x>=1; x--){
+    const ws = workEntries(x,ex).filter(e => num(e.reps)!==null);
+    if(ws.length){
+      const wt = ws.map(e => num(e.weight)).find(v => v!==null);
+      return { weight: wt ?? null, reps: ws.map(e => num(e.reps)) };
+    }
+  }
+  return null;
+}
+
+/* ---------- правило прогресії і закриття тижня ---------- */
+function computeClose(w, bumps){
+  const cb = blkObj(w), nw = w+1;
+  const nb = nw<=12 ? blkObj(nw) : cb;
+  const deload = nw<=12 && nb.deload;
+  const cur = S.targets[w] || {};
+  const newT = {}, rows = [], seen = new Set();
+
+  for(const day of DAYS){
+    if(PLAN[day].paused) continue;
+    const off = dayOff(w,day);
+    for(const ex of activeIds(w,day)){
+      seen.add(ex);
+      const L = LIB[ex], st0 = L.eq ? stepOf(ex) : 2;
+      const sets = deload ? 2 : L.k;
+      const fill = (v,n=sets) => Array.from({length:n}, () => v);
+      const work = workEntries(w,ex);
+      const reps = work.map(e => num(e.reps)).filter(v => v!==null);
+      const curW = work.map(e => num(e.weight)).find(v => v!==null) ?? (cur[ex] ? cur[ex].weight : null);
+      const pain = work.some(e => e.pain);
+      const status = off ? "dayskip" : "ok";
+      const r = { ex, name:L.n, day, status, curW, reps, pain, missing:Math.max(0, sets-reps.length), msg:null, nextW:curW, nextReps:null };
+
+      if(status==="dayskip" || status==="skip"){
+        r.nextReps = (cur[ex] && cur[ex].reps && cur[ex].reps.length===sets) ? cur[ex].reps : fill(nb.lo);
+      } else if(deload){
+        r.nextW = curW!==null ? roundDown(curW*0.5, st0) : null;
+        r.nextReps = fill(10,2); r.msg = "deload";
+      } else if(!cb.prog){
+        r.nextReps = fill(nb.lo);
+      } else if(pain){
+        if(bumps[ex]){
+          r.nextW = curW!==null ? roundTo(curW+st0, st0) : null;
+          r.nextReps = fill(nb.lo); r.msg = "up_manual";
+        } else {
+          r.nextReps = Array.from({length:sets}, (_,i) => clamp((reps[i] ?? nb.lo)+1, nb.lo, nb.hi));
+          r.msg = "pain";
+        }
+      } else if(reps.length===sets && reps.every(v => v>=cb.hi)){
+        r.nextW = curW!==null ? roundTo(curW+st0, st0) : null;
+        r.nextReps = fill(nb.lo); r.msg = "up";
+      } else if(reps.length===0){
+        r.nextReps = fill(nb.lo);
+      } else {
+        r.nextReps = Array.from({length:sets}, (_,i) => clamp((reps[i] ?? nb.lo)+1, nb.lo, nb.hi));
+        r.msg = "hold";
+      }
+      newT[ex] = { weight:r.nextW, reps:r.nextReps, msg:r.msg };
+      rows.push(r);
+    }
+  }
+  // Вправи, яких не було цього тижня (через заміну), зберігають свою попередню ціль
+  for(const d of DAYS) for(const id of PLAN[d].ids)
+    if(!seen.has(id) && cur[id]) newT[id] = cur[id];
+
+  return { newT, rows };
+}
+
+function applyClose(){
+  const c = ui.close, w = S.cur;
+  setUndo(JSON.stringify(S));
+  const { newT, rows } = computeClose(w, c.bumps);
+  S.closed[w] = { date:new Date().toISOString(), rows: rows.map(r => ({ ex:r.ex, status:r.status, curW:r.curW, nextW:r.nextW, reps:r.reps })) };
+  if(w<12){
+    S.targets[w+1] = newT;
+    S.cur = w+1;
+    ui.toast = `Тиждень ${w} закрито. Далі тиждень ${w+1}` + (blk(w+1)!==blk(w) ? ` (блок ${blk(w+1)})` : "") + ".";
+  } else {
+    S.finished = true;
+    ui.toast = "Програму завершено.";
+  }
+  ui.view = null;
+  closeOv();
+  save();
+  renderApp();
+  window.scrollTo(0,0);
+}
+
+/* ---------- підказки ---------- */
+function hintFor(w,ex){
+  const b = blkObj(w), t = (S.targets[w]||{})[ex], prev = lastWork(w,ex);
+  const lines = [];
+  if(prev) lines.push(`Минулий тиждень ${prev.weight!==null ? fmt(prev.weight)+" кг × " : ""}${prev.reps.join("/")}`);
+  if((b.prog || b.deload) && t){
+    lines.push(`Ціль: ${t.weight!==null && t.weight!==undefined ? fmt(t.weight)+" кг, " : ""}${t.reps.join("/")}`);
+    if(t.msg) lines.push(MSG[t.msg]);
+  } else {
+    lines.push(`Ціль: ${b.lo}-${b.hi} повт`);
+  }
+  return `<div class="hint">${lines.map(l => `<div>${esc(l)}</div>`).join("")}</div>`;
+}
+
+/* ---------- рендер головного екрана ---------- */
+function setRow(w,day,ex,type,no){
+  const e = findE(w,day,ex,type,no) || {};
+  const b = blkObj(w), t = (S.targets[w]||{})[ex] || {};
+  const warm = type==="warm";
+  const k = [w,day,ex,type,no].join("|");
+  const repPh = (!warm && (b.prog||b.deload) && t.reps) ? String(t.reps[no-1] ?? "повт") : "повт";
+  return `
+  <div class="set${warm?" warm":""}">
+    <div class="lbl">${warm ? "Р"+no : no}</div>
+    <div class="fld"><input inputmode="decimal" placeholder="" data-f="weight" data-k="${k}" value="${esc(e.weight==null ? "" : fmt(e.weight))}"><span class="unit">кг</span></div>
+    <div class="fld"><input inputmode="numeric" placeholder="${esc(repPh)}" data-f="reps" data-k="${k}" value="${esc(e.reps ?? "")}"><span class="unit">повт</span></div>
+  </div>
+  <div class="set2">
+    <div class="rpew"><span class="rcap">відчуття</span><div class="rpe">${[6,7,8].map(r => `<button data-act="rpe" data-k="${k}" data-v="${r}" class="${e.rpe===r?"on":""}">${r}</button>`).join("")}</div></div>
+    <button class="toggle${e.pain?" bad":""}" data-act="pain" data-k="${k}">Біль</button>
+    ${e.manual ? '<span class="badge">вручну</span>' : ""}
+  </div>
+  ${e.pain ? `<input class="cm" data-f="painNote" data-k="${k}" placeholder="Де і що болить" value="${esc(e.painNote)}">` : ""}
+  ${e.manual ? `<input class="cm" data-f="reason" data-k="${k}" placeholder="Причина зміни ваги (необов'язково)" value="${esc(e.reason)}">` : ""}
+  ${!warm ? `<input class="cm" data-f="note" data-k="${k}" placeholder="Примітка (самопочуття)" value="${esc(e.note)}">` : ""}`;
+}
+
+function setRow2(w,day,ex,type,no){
+  const e = findE(w,day,ex,type,no) || {};
+  const b = blkObj(w), t = (S.targets[w]||{})[ex] || {};
+  const warm = type==="warm";
+  const k = [w,day,ex,type,no].join("|");
+  const wPh = (!warm && t.weight!=null) ? fmt(t.weight) : "";
+  const rPh = (!warm && (b.prog||b.deload) && t.reps) ? String(t.reps[no-1] ?? "") : "";
+  const rpe = e.rpe ? String(e.rpe) : "—";
+  return `<div class="srow${warm?" warm":""}">
+    <div class="sno">${warm ? "Р"+no : no}</div>
+    <div class="fld${e.manual?" man":""}"><input inputmode="decimal" placeholder="${esc(wPh)}" data-f="weight" data-k="${k}" value="${esc(e.weight==null ? "" : fmt(e.weight))}"></div>
+    <div class="fld"><input inputmode="numeric" placeholder="${esc(rPh)}" data-f="reps" data-k="${k}" value="${esc(e.reps ?? "")}"></div>
+    <button class="rpeb" data-act="secOpen" data-k="${k}">${rpe}${e.pain ? "<i>!</i>" : ""}</button>
+  </div>`;
+}
+
+function secHtml(k){
+  const p = parseK(k), e = entryFor(k) || {};
+  const setName = p.type==="warm" ? "Розминка " + p.no : "Підхід " + p.no;
+  const opts = [[6,"Легко"],[7,"Норма"],[8,"Важко"]].map(([v,l]) =>
+    `<button class="pick${e.rpe===v?" on":""}" data-act="rpe" data-k="${k}" data-v="${v}">${v} · ${l}</button>`).join("");
+  return `<h2>${esc(LIB[p.ex].n)}</h2>
+    <p class="sub">${setName}. Відчуття, біль і примітка. Це не впливає на розрахунок ваг.</p>
+    <h3>Відчуття навантаження</h3>
+    ${opts}
+    <button class="btn ghost" data-act="rpeClear" data-k="${k}">Прибрати оцінку</button>
+    <h3>Біль</h3>
+    <button class="btn${e.pain ? "" : " ghost"}" data-act="pain" data-k="${k}">${e.pain ? "Біль відмічено (натисни, щоб скасувати)" : "Був біль"}</button>
+    ${e.pain ? `<input class="cm" data-f="painNote" data-k="${k}" placeholder="Де і що болить" value="${esc(e.painNote)}">` : ""}
+    <h3>Примітка</h3>
+    <input class="cm" data-f="note" data-k="${k}" placeholder="Самопочуття" value="${esc(e.note)}">
+    ${e.manual ? `<h3>Вагу змінено вручну</h3><input class="cm" data-f="reason" data-k="${k}" placeholder="Причина (необов'язково)" value="${esc(e.reason)}">` : ""}
+    <button class="btn" data-act="closeOv">Готово</button>`;
+}
+
+function exCard(w,day,ex,idx,isCur,off){
+  const L = LIB[ex], sc = setsOf(w,ex);
+  const tags = (L.lowBack ? '<span class="tag warn">навантажує поперек</span>' : "") + (L.frontDelt ? '<span class="tag">передня дельта</span>' : "");
+  let body = "";
+  if(!off){
+    body += `<div class="thead"><span>Підхід</span><span>Вага, кг</span><span>Повторення</span><span>RPE</span></div>`;
+    for(let i=1;i<=sc.warm;i++) body += setRow2(w,day,ex,"warm",i);
+    for(let i=1;i<=sc.work;i++) body += setRow2(w,day,ex,"work",i);
+  }
+  return `<section class="ex${off?" dim":""}">
+    <div class="exh">
+      <div><div class="exn">${esc(L.n)}</div><div class="exe">${esc(L.en)} · ${GROUPS[L.g]} · ${EQ[L.eq]}</div></div>
+      ${isCur && !off ? `<button class="chip" data-act="swap" data-day="${day}" data-slot="${idx}">Змінити</button>` : ""}
+    </div>
+    ${tags ? `<div class="tags">${tags}</div>` : ""}
+    ${off ? '<div class="hint">День пропущено, вправа не рахується</div>' : hintFor(w,ex)}
+    ${body}
+  </section>`;
+}
+
+function startHtml(){
+  return `<header><div class="top"><h1>GymTrack</h1></div></header><main><div class="startbox">
+    <p>Вкажи тиждень, з якого починаєш. Для блоку 2 це тиждень 4.</p>
+    <p class="sub">Блок 1 в застосунку не записувався, тож він буде позначений як "не заповнено". Стартові ваги вводиш по ходу тижня.</p>
+    <label class="lab">Тиждень (1-12)<input id="startWk" type="number" inputmode="numeric" min="1" max="12" value="4"></label>
+    <button class="btn" data-act="start">Почати</button>
+  </div></main>`;
+}
+
+function renderApp(){
+  if(!READY){ $app.innerHTML = '<main><p class="paused">Завантаження...</p></main>'; return; }
+  if(!SESS){ $app.innerHTML = loginHtml(); return; }
+  if(!S.started){ $app.innerHTML = startHtml(); return; }
+  if(ui.screen!=="home"){ $app.innerHTML = screenHtml(); return; }
+  const w = viewWk(), b = blkObj(w), isCur = w===S.cur;
+  let h = `<header>
+    <div class="top"><div style="display:flex;align-items:center;gap:12px">${burgerBtn()}<h1>GymTrack</h1></div></div>
+    <div class="wl">Блок ${blk(w)}, тиждень ${w} з 12 · ${b.name}</div>`;
+  if(ui.toast) h += `<div class="toast">${esc(ui.toast)}</div>`;
+  if(DB_MODE!=="cloud") h += '<div class="banner">Дані зберігаються тільки в цьому браузері: хмара недоступна.</div>';
+  if(DB_ERR) h += '<div class="banner warnb">Не вдалося зберегти в хмару. Перевір інтернет, запис збережеться при наступній зміні.</div>';
+  if(ui.undo) h += `<div class="banner">Тиждень закрито. <button class="chip" data-act="undo">Відмінити закриття</button></div>`;
+  if(!isCur) h += `<div class="banner">Минулий тиждень. Записи можна виправити, але поточні цілі вони не змінюють. <button class="chip" data-act="goCur">До поточного</button></div>`;
+  if(S.finished) h += `<div class="banner ok">Програму завершено: усі 12 тижнів закрито.</div>`;
+  h += `<nav class="days">${DAYS.map(d => `<button class="day${d===ui.day?" on":""}${PLAN[d].paused?" off":""}" data-act="day" data-day="${d}">${DLABEL[d]}${PLAN[d].paused?" · пауза":""}</button>`).join("")}</nav></header><main>`;
+  ui.toast = "";
+
+  const p = PLAN[ui.day];
+  if(p.paused){
+    h += `<div class="paused">Ноги на паузі через біль у попереку.<br>Записи не ведуться і не рахуються в статистиці тижня.</div>`;
+  } else {
+    const off = dayOff(w,ui.day);
+    h += `<div class="dayhead"><b>${DLABEL[ui.day]}: ${p.name}</b></div>`;
+    if(off) h += `<div class="banner warnb">День позначено: пропуск або хвороба. Він не рахується в прогресії.</div>`;
+    if(isCur && !S.finished) h += `<button class="btn ghost" data-act="skipDay" data-day="${ui.day}">${off ? "Скасувати пропуск дня" : "Позначити пропуск / хворобу на день"}</button>`;
+    activeIds(w,ui.day).forEach((ex,i) => { h += exCard(w,ui.day,ex,i,isCur,off); });
+  }
+  if(isCur && !S.finished) h += `<div class="bottom"><button class="btn ghost" data-act="saveNow">Зберегти зараз</button><button class="btn" data-act="closeWeek">Завершити тиждень ${w}</button></div>`;
+  h += `</main>`;
+  $app.innerHTML = h;
+}
+
+/* ---------- меню та екрани ---------- */
+const NAV = [
+  ["home","Головна",'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>'],
+  ["program","Моя програма",'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>'],
+  ["journal","Журнал досягнень",'<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4v2a3 3 0 0 0 3 3M17 6h3v2a3 3 0 0 1-3 3"/>'],
+  ["stats","Статистика",'<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>'],
+  ["settings","Налаштування",'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>']
+];
+const svgI = p => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+function burgerBtn(){ return '<button class="burger" data-act="menu" aria-label="Меню"><i></i><i></i><i></i></button>'; }
+function renderMenu(){
+  const w = S.cur;
+  return `<aside class="dpanel">
+    <div class="dlogo">Gym<span>Track</span></div>
+    <nav>${NAV.map(([id,label,p]) => `<button class="mi${ui.screen===id?" on":""}" data-act="go" data-s="${id}">${svgI(p)}<span>${label}</span></button>`).join("")}</nav>
+    <div class="dfoot">Блок ${blk(w)} · тиждень ${w} з 12 · ${blkObj(w).name}</div>
+  </aside>`;
+}
+function openMenu(){ const m = document.getElementById("menu"); m.innerHTML = renderMenu(); m.classList.remove("hidden"); }
+function closeMenu(){ const m = document.getElementById("menu"); m.classList.add("hidden"); m.innerHTML = ""; }
+function programBody(){
+  const bst = bn => {
+    const ws = BLK[bn].weeks;
+    if(ws.every(x => S.closed[x])) return "завершено";
+    if(ws.includes(S.cur)) return "поточний";
+    if(ws.every(x => x<S.cur && !S.closed[x])) return "не заповнено";
+    if(ws.every(x => x>S.cur)) return "попереду";
+    return "частково";
+  };
+  return Object.keys(BLK).map(bn => `<div class="bl">
+      <div class="blh"><b>Блок ${bn}</b> · ${BLK[bn].name} <span class="badge">${bst(+bn)}</span></div>
+      <div class="wks">${BLK[bn].weeks.map(w => {
+        const cls = S.closed[w] ? "done" : (w===S.cur ? "cur" : (w<S.cur ? "gap" : ""));
+        return `<button class="wk ${cls}" ${w>S.cur ? "disabled" : ""} data-act="goWk" data-wk="${w}">${w}</button>`;
+      }).join("")}</div>
+    </div>`).join("") + `<p class="sub">Натисни номер тижня, щоб відкрити його. Майбутні тижні недоступні.</p>`;
+}
+function settingsBody(){
+  const storage = DB_MODE==="cloud" ? "хмара, видно тільки тобі" : "лише цей браузер (хмара недоступна)";
+  return `<h3>Дані</h3>
+    <p class="sub">Записів: ${S.entries.length} · закритих тижнів: ${Object.keys(S.closed).length} · сховище: ${storage}.</p>
+    <button class="btn ghost" data-act="exportJson">Експорт JSON (резервна копія)</button>
+    <h3>Застосунок</h3>
+    <p class="sub">GymTrack, версія 0.2 (етап 2: меню та навігація).</p>`;
+}
+function screenHtml(){
+  const s = ui.screen;
+  const titles = { program:"Моя програма", journal:"Журнал досягнень", stats:"Статистика", settings:"Налаштування" };
+  let body = "";
+  if(s==="program") body = programBody();
+  else if(s==="journal") body = `<p class="sub">Журнал досягнень з'явиться на наступному етапі: історія вправ, рекорди, пошук і імпорт.</p>`;
+  else if(s==="stats") body = `<p class="sub">Статистика ще не реалізована. Розділ з'явиться пізніше.</p>`;
+  else if(s==="settings") body = settingsBody();
+  return `<header><div class="top"><div style="display:flex;align-items:center;gap:12px">${burgerBtn()}<h1>${titles[s] || "GymTrack"}</h1></div></div></header><main>${body}</main>`;
+}
+
+/* ---------- оверлеї ---------- */
+function openOv(html, cls){
+  $ov.innerHTML = `<div class="sheet ${cls||""}">${html}</div>`;
+  $ov.classList.remove("hidden");
+}
+function refreshOv(html){
+  const sh = $ov.querySelector(".sheet");
+  if(sh) sh.innerHTML = html; else openOv(html);
+}
+function closeOv(){
+  $ov.classList.add("hidden");
+  $ov.innerHTML = "";
+  ui.close = null;
+}
+
+function swapHtml(day,slot){
+  const cur = activeIds(S.cur,day);
+  const groups = {};
+  Object.keys(LIB).filter(id => !cur.includes(id)).forEach(id => {
+    const g = LIB[id].g;
+    if(!groups[g]) groups[g] = [];
+    groups[g].push(id);
+  });
+  const list = Object.keys(GROUPS).filter(g => groups[g]).map(g =>
+    `<h3>${GROUPS[g]}</h3>` + groups[g].map(id =>
+      `<button class="pick" data-act="pickEx" data-day="${day}" data-slot="${slot}" data-ex="${id}">${esc(LIB[id].n)}<span>${esc(LIB[id].en)} · ${EQ[LIB[id].eq]}</span></button>`
+    ).join("")
+  ).join("");
+  return `<h2>Змінити вправу</h2>
+    <p class="sub">Тиждень ${S.cur}, ${DLABEL[day]}. Зміна діє тільки на цей тиждень.</p>
+    ${list}
+    <button class="btn ghost" data-act="resetSlot" data-day="${day}" data-slot="${slot}">Повернути початкову вправу</button>
+    <button class="btn ghost" data-act="closeOv">Скасувати</button>`;
+}
+
+function blocksHtml(){
+  const bst = bn => {
+    const ws = BLK[bn].weeks;
+    if(ws.every(x => S.closed[x])) return "завершено";
+    if(ws.includes(S.cur)) return "поточний";
+    if(ws.every(x => x<S.cur && !S.closed[x])) return "не заповнено";
+    if(ws.every(x => x>S.cur)) return "попереду";
+    return "частково";
+  };
+  return `<h2>Блоки програми</h2>` +
+    Object.keys(BLK).map(bn => `<div class="bl">
+      <div class="blh"><b>Блок ${bn}</b> · ${BLK[bn].name} <span class="badge">${bst(+bn)}</span></div>
+      <div class="wks">${BLK[bn].weeks.map(w => {
+        const cls = S.closed[w] ? "done" : (w===S.cur ? "cur" : (w<S.cur ? "gap" : ""));
+        return `<button class="wk ${cls}" ${w>S.cur ? "disabled" : ""} data-act="goWk" data-wk="${w}">${w}</button>`;
+      }).join("")}</div>
+    </div>`).join("") +
+    `<div class="legend">Зелені - завершені, помаранчевий - поточний, пунктир - не закриті (минулі). Майбутні тижні недоступні.</div>
+    <h3>Резервна копія</h3>
+    <p class="sub">Записів: ${S.entries.length} · закритих тижнів: ${Object.keys(S.closed).length} · пропусків днів: ${Object.keys(S.skips).length} · замін вправ: ${Object.keys(S.swaps).length}</p>
+    <button class="btn ghost" data-act="exportJson">Експорт JSON</button>
+    <button class="btn ghost" data-act="closeOv">Закрити</button>`;
+}
+
+function closeFlowHtml(){
+  const c = ui.close, w = S.cur;
+  const { rows } = computeClose(w, c.bumps);
+  const incomplete = rows.filter(r => r.missing>0 && r.status!=="dayskip");
+  const last = w===12, nextBlk = !last && blk(w+1)!==blk(w);
+  const label = last ? "Завершити програму" : (nextBlk ? `Перейти до блоку ${blk(w+1)}` : "Перейти до наступного тижня");
+  return `<h2>Підсумок тижня ${w}</h2>
+    <p class="sub">Перевір результати. Після переходу тиждень закривається.</p>
+    ${incomplete.length ? `<div class="banner warnb">Не всі підходи записані (вправ: ${incomplete.length}). Можна завершити, але вага за цими вправами не підвищиться.</div>` : ""}
+    ${rows.map(r => `<div class="sr">
+      <div class="srn">${esc(r.name)}${r.pain ? ' <span class="tag warn">біль</span>' : ""}</div>
+      ${r.status==="dayskip" ? '<div class="srv">День пропущено</div>' : ""}
+      <div class="srd">${r.curW!==null ? fmt(r.curW)+" кг" : "вага не записана"}${(r.nextW!==null && r.nextW!==r.curW) ? " → "+fmt(r.nextW)+" кг" : ""}${r.nextReps ? " · ціль "+r.nextReps.join("/") : ""}</div>
+      ${r.msg ? `<div class="srm">${MSG[r.msg]}</div>` : ""}
+      ${(r.missing>0 && r.status!=="dayskip") ? `<div class="srm">Не записано підходів: ${r.missing}</div>` : ""}
+      ${(r.pain && r.status!=="dayskip" && r.status!=="skip") ? `<button class="chip ${c.bumps[r.ex] ? "on" : ""}" data-act="bump" data-ex="${r.ex}">${c.bumps[r.ex] ? "Ручне підвищення увімкнено" : "Підвищити вручну на крок"}</button>` : ""}
+    </div>`).join("")}
+    <button class="btn" data-act="applyClose">${label}</button>
+    <button class="btn ghost" data-act="closeOv">Скасувати</button>`;
+}
+
+/* ---------- резервна копія (лише читання) ---------- */
+function exportData(){
+  const payload = { app:"GymTrack", schema:"v2", exportedAt:new Date().toISOString(), data:S };
+  const text = JSON.stringify(payload, null, 2);
+  openOv(`<h2>Резервна копія</h2>
+    <p class="sub">Натисни всередині поля, виділи весь текст і скопіюй. Збережи в Нотатки або Файли.</p>
+    <textarea class="cm" style="height:260px;font-size:12px" readonly onfocus="this.select()">${esc(text)}</textarea>
+    <button class="btn ghost" data-act="closeOv">Закрити</button>`);
+}
+
+/* ---------- події ---------- */
+document.addEventListener("click", e => {
+  if(e.target===$ov){ closeOv(); return; }
+  if(e.target.id==="menu"){ closeMenu(); return; }
+  const t = e.target.closest("[data-act]");
+  if(!t || t.disabled) return;
+  switch(t.dataset.act){
+    case "start": {
+      const w = parseInt(document.getElementById("startWk").value, 10);
+      if(!(w>=1 && w<=12)){ alert("Вкажи тиждень від 1 до 12"); return; }
+      S.started = true; S.cur = w; save(); renderApp(); break;
+    }
+    case "day": ui.day = t.dataset.day; renderApp(); window.scrollTo(0,0); break;
+    case "skipDay": {
+      const w = viewWk(), k = w+"|"+t.dataset.day;
+      setUndo(null);
+      if(S.skips[k]) delete S.skips[k]; else S.skips[k] = true;
+      save(); renderApp(); break;
+    }
+    case "secOpen": openOv(secHtml(t.dataset.k)); break;
+    case "rpe": {
+      const k = t.dataset.k, v = +t.dataset.v, e = entryFor(k);
+      setE(k, { rpe: (e && e.rpe===v) ? null : v }); refreshOv(secHtml(k)); renderApp(); break;
+    }
+    case "rpeClear": setE(t.dataset.k, { rpe:null }); refreshOv(secHtml(t.dataset.k)); renderApp(); break;
+    case "pain": {
+      const k = t.dataset.k, e = entryFor(k);
+      setE(k, { pain: !(e && e.pain) }); refreshOv(secHtml(k)); renderApp(); break;
+    }
+    case "swap": openOv(swapHtml(t.dataset.day, +t.dataset.slot)); break;
+    case "pickEx": {
+      const day = t.dataset.day, slot = +t.dataset.slot;
+      const arr = [...activeIds(S.cur,day)];
+      arr[slot] = t.dataset.ex;
+      S.swaps[S.cur+"|"+day] = arr; save(); closeOv(); renderApp(); break;
+    }
+    case "resetSlot": {
+      const day = t.dataset.day, slot = +t.dataset.slot;
+      const arr = [...activeIds(S.cur,day)];
+      arr[slot] = PLAN[day].ids[slot];
+      const same = arr.every((id,i) => id===PLAN[day].ids[i]);
+      if(same) delete S.swaps[S.cur+"|"+day]; else S.swaps[S.cur+"|"+day] = arr;
+      save(); closeOv(); renderApp(); break;
+    }
+    case "blocks": openOv(blocksHtml()); break;
+    case "goWk": {
+      const w = +t.dataset.wk;
+      ui.view = (w===S.cur) ? null : w;
+      ui.screen = "home";
+      closeOv(); renderApp(); window.scrollTo(0,0); break;
+    }
+    case "goCur": ui.view = null; renderApp(); break;
+    case "closeWeek":
+      ui.close = { bumps:{} };
+      openOv(closeFlowHtml(), "full"); break;
+    case "bump": { const id = t.dataset.ex; ui.close.bumps[id] = !ui.close.bumps[id]; refreshOv(closeFlowHtml()); break; }
+    case "applyClose": applyClose(); break;
+    case "undo":
+      if(ui.undo){
+        S = JSON.parse(ui.undo);
+        setUndo(null); ui.toast = ""; save(); renderApp(); window.scrollTo(0,0);
+      }
+      break;
+    case "saveNow": saveNow(); break;
+    case "login": doAuth("login"); break;
+    case "signup": doAuth("signup"); break;
+    case "menu": openMenu(); break;
+    case "go": ui.screen = t.dataset.s; ui.view = null; closeMenu(); renderApp(); window.scrollTo(0,0); break;
+    case "exportJson": exportData(); break;
+    case "closeOv": closeOv(); break;
+  }
+});
+
+document.addEventListener("change", e => {
+  const t = e.target;
+  if(!t.dataset || !t.dataset.f) return;
+  const f = t.dataset.f, k = t.dataset.k, p = parseK(k);
+  if(f==="weight"){
+    const v = num(t.value);
+    const b = blkObj(p.wk), tg = (S.targets[p.wk]||{})[p.ex];
+    const hasSug = (b.prog || b.deload) && tg && tg.weight!==null && tg.weight!==undefined;
+    const manual = !!(hasSug && v!==null && v!==tg.weight);
+    const before = entryFor(k) ? entryFor(k).manual : false;
+    setE(k, { weight:v, manual });
+    if(before!==manual) renderApp();
+  } else if(f==="reps"){
+    setE(k, { reps: num(t.value) });
+  } else {
+    setE(k, { [f]: t.value });
+  }
+});
+
+/* Збереження під час введення, а не лише після втрати фокусу.
+   Закриття застосунку зі списку запущених не завжди викликає change, тому зберігаємо на кожну зміну. */
+function weightManual(k, v){
+  const p = parseK(k), b = blkObj(p.wk), tg = (S.targets[p.wk]||{})[p.ex];
+  return !!((b.prog || b.deload) && tg && tg.weight!=null && v!==null && v!==tg.weight);
+}
+/* Явне збереження: зчитує всі поля на екрані і відправляє в хмару */
+function saveFromDom(){
+  document.querySelectorAll("input[data-f][data-k]").forEach(inp => {
+    const f = inp.dataset.f, k = inp.dataset.k;
+    if(inp.value === "" && !entryFor(k)) return;
+    if(f==="weight"){ const v = num(inp.value); setE(k, { weight:v, manual: weightManual(k, v) }); }
+    else if(f==="reps"){ setE(k, { reps: num(inp.value) }); }
+    else { setE(k, { [f]: inp.value }); }
+  });
+  localMirror(); setDirty(true); flushDb();
+}
+function saveNow(){
+  saveFromDom();
+  dbQueue.then(() => {
+    ui.toast = DB_ERR ? "Не вдалося зберегти в хмару. Перевір інтернет." : (DB_MODE==="cloud" ? "Збережено в хмарі" : "Збережено лише на цьому пристрої");
+    renderApp();
+  });
+}
+document.addEventListener("input", e => {
+  const t = e.target;
+  if(!t.dataset || !t.dataset.f) return;
+  const f = t.dataset.f, k = t.dataset.k;
+  if(f==="weight"){ const v = num(t.value); setE(k, { weight:v, manual: weightManual(k, v) }); }
+  else if(f==="reps"){ setE(k, { reps: num(t.value) }); }
+  else { setE(k, { [f]: t.value }); }
+});
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "hidden"){ localMirror(); flushDb(); } });
+window.addEventListener("pagehide", () => { localMirror(); flushDb(); });
+boot();
+</script>
+</body>
+</html>
